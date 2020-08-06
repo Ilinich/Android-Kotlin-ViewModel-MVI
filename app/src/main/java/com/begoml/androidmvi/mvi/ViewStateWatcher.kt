@@ -3,19 +3,20 @@ package com.begoml.androidmvi.mvi
 class ViewStateWatcher<T> private constructor(
     private val watchers: List<Watcher<T, Any?>>
 ) {
-    private var model: T? = null
+    private var viewState: T? = null
 
-    fun render(newModel: T) {
-        val oldModel = model
+    fun render(newViewState: T) {
+        val oldViewState = viewState
+
         watchers.forEach { element ->
             val getter = element.accessor
-            val new = getter(newModel)
-            if (oldModel == null || element.diffStrategy(getter(oldModel), new)) {
+            val new = getter(newViewState)
+            if (oldViewState == null || element.diffStrategy(getter(oldViewState), new)) {
                 element.callback(new)
             }
         }
 
-        model = newModel
+        viewState = newViewState
     }
 
     private class Watcher<T, R>(
@@ -28,7 +29,7 @@ class ViewStateWatcher<T> private constructor(
      * It's obligatory to clear watcher in onDestroyView
      */
     fun clear() {
-        model = null
+        viewState = null
     }
 
     class Builder<T> @PublishedApi internal constructor() {
@@ -54,12 +55,10 @@ class ViewStateWatcher<T> private constructor(
             watch(this, callback = callback)
         }
 
-        operator fun <R> (DiffStrategy<R>).invoke(callback: (R) -> Unit) =
-            this to callback
+        operator fun <R> (DiffStrategy<R>).invoke(callback: (R) -> Unit) = this to callback
 
         @PublishedApi
-        internal fun build(): ViewStateWatcher<T> =
-            ViewStateWatcher(watchers)
+        internal fun build(): ViewStateWatcher<T> = ViewStateWatcher(watchers)
     }
 }
 

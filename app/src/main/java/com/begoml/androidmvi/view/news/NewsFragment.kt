@@ -13,6 +13,7 @@ import com.begoml.androidmvi.R
 import com.begoml.androidmvi.di.listnews.DaggerNewsComponent
 import com.begoml.androidmvi.di.listnews.NewsComponent
 import com.begoml.androidmvi.mvi.ViewStateWatcher
+import com.begoml.androidmvi.mvi.initializeViewStateWatcher
 import kotlinx.android.synthetic.main.news_fragment.*
 import javax.inject.Inject
 
@@ -43,6 +44,7 @@ class NewsFragment : Fragment(R.layout.news_fragment) {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         injectDependencies()
     }
 
@@ -50,14 +52,13 @@ class NewsFragment : Fragment(R.layout.news_fragment) {
         super.onViewCreated(view, savedInstanceState)
 
         list.apply {
-            layoutManager = LinearLayoutManager(context)
+            layoutManager = LinearLayoutManager(requireContext())
             addItemDecoration(ItemDecoration())
             adapter = newsAdapter
         }
 
 
         viewModel.apply {
-
             viewState.observe(viewLifecycleOwner, Observer { stateView ->
                 stateView?.let {
                     watcher.render(it)
@@ -76,6 +77,12 @@ class NewsFragment : Fragment(R.layout.news_fragment) {
         viewModel.dispatchEvent(Event.SaveInstanceState)
 
         super.onSaveInstanceState(outState)
+    }
+
+    override fun onDestroyView() {
+        watcher.clear()
+
+        super.onDestroyView()
     }
 
     private fun injectDependencies() {
@@ -113,7 +120,3 @@ class ItemDecoration : RecyclerView.ItemDecoration() {
     }
 }
 
-inline fun <T> initializeViewStateWatcher(init: ViewStateWatcher.Builder<T>.() -> Unit): ViewStateWatcher<T> =
-    ViewStateWatcher.Builder<T>()
-        .apply(init)
-        .build()
