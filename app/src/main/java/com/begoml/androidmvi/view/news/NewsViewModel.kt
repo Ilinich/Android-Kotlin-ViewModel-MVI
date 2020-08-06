@@ -4,31 +4,35 @@ import androidx.lifecycle.SavedStateHandle
 import com.begoml.androidmvi.core.NewsRepository
 import com.begoml.androidmvi.core.model.NewsModel
 import com.begoml.androidmvi.mvi.*
-import com.begoml.androidmvi.tools.NotImplementedException
 import com.begoml.androidmvi.tools.handleResults
+import com.begoml.androidmvi.view.news.NewsViewModel.Companion.SAVED_STATE_KEY_NEWS
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 class NewsViewModel(
-    private val savedStateHandle: SavedStateHandle,
-    private val newsRepository: NewsRepository
+    savedStateHandle: SavedStateHandle,
+    reducer: ReducerImpl,
+    actor: ActorImpl,
+    postProcessor: PostProcessorImpl,
+    bootstrapper: BootstrapperImpl
 ) : MviViewModel<ViewState, Event, Command, Effect, News>(
     viewState = ViewState(),
     eventToCommandTransformer = UiEventTransformer(),
-    actor = ActorImpl(newsRepository),
-    reducer = ReducerImpl(),
-    postProcessor = PostProcessorImpl(),
-    bootstrapper = BootstrapperImpl()
+    actor = actor,
+    reducer = reducer,
+    postProcessor = postProcessor,
+    bootstrapper = bootstrapper
 ) {
 
     init {
-        savedStateHandle.get<List<NewsModel>>(KEY_NEWS)?.let { value ->
-
+        savedStateHandle.get<List<NewsModel>>(SAVED_STATE_KEY_NEWS)?.let { value ->
+            value.hashCode()
         }
     }
 
     companion object {
-        private const val KEY_NEWS = "key_news"
+        const val SAVED_STATE_KEY_NEWS = "SAVED_STATE_KEY_NEWS"
     }
 }
 
@@ -37,7 +41,7 @@ data class ViewState(
     val newsList: List<NewsModel> = emptyList()
 )
 
-class ReducerImpl : Reducer<ViewState, Effect> {
+class ReducerImpl @Inject constructor() : Reducer<ViewState, Effect> {
     override fun invoke(state: ViewState, effect: Effect): ViewState {
         return when (effect) {
             Effect.StartedLoading -> state.copy(isLoading = true)
@@ -48,7 +52,8 @@ class ReducerImpl : Reducer<ViewState, Effect> {
     }
 }
 
-class ActorImpl constructor(
+class ActorImpl @Inject constructor(
+    private val savedStateHandle: SavedStateHandle,
     private val newsRepository: NewsRepository
 ) : Actor<ViewState, Command, Effect> {
 
@@ -57,9 +62,11 @@ class ActorImpl constructor(
             Command.StartLoadData -> {
                 updateData(viewModelScope, sendEffect)
             }
-
             Command.UpdateData -> {
                 updateData(viewModelScope, sendEffect)
+            }
+            Command.SaveInstanceState -> {
+                savedStateHandle.set(SAVED_STATE_KEY_NEWS, state.newsList)
             }
         }
     }
@@ -73,13 +80,7 @@ class ActorImpl constructor(
             newsRepository.getNews().handleResults(
                 {
                     sendEffect(Effect.StoppedLoading)
-
                 }, { newsList ->
-
-//                    if (Looper.getMainLooper().thread == Thread.currentThread()) {
-//                        // Current Thread is Main Thread.
-//                    }
-
                     sendEffect(Effect.StoppedLoading)
                     sendEffect(Effect.NewsLoaded(newsList))
                 }
@@ -88,7 +89,7 @@ class ActorImpl constructor(
     }
 }
 
-class PostProcessorImpl : PostProcessor<ViewState, Effect, Command> {
+class PostProcessorImpl @Inject constructor() : PostProcessor<ViewState, Effect, Command> {
     override fun invoke(state: ViewState, effect: Effect): Command? {
         return when (effect) {
             else -> null
@@ -96,7 +97,7 @@ class PostProcessorImpl : PostProcessor<ViewState, Effect, Command> {
     }
 }
 
-class BootstrapperImpl : Bootstrapper<Command> {
+class BootstrapperImpl @Inject constructor() : Bootstrapper<Command> {
 
     override fun invoke(sendCommand: (command: Command) -> Unit) {
         sendCommand(Command.StartLoadData)
@@ -105,7 +106,9 @@ class BootstrapperImpl : Bootstrapper<Command> {
 
 class UiEventTransformer : EventToCommandTransformer<Event, Command> {
     override fun invoke(event: Event): Command {
-        throw NotImplementedException()
+        return when (event) {
+            Event.SaveInstanceState -> Command.SaveInstanceState
+        }
     }
 }
 
@@ -113,11 +116,13 @@ sealed class Effect {
 
     object StartedLoading : Effect()
     object StoppedLoading : Effect()
+
     data class NewsLoaded(val newsList: List<NewsModel>) : Effect()
 }
 
 sealed class Event {
 
+    object SaveInstanceState : Event()
 }
 
 sealed class News {
@@ -128,5 +133,7 @@ sealed class Command {
 
     object StartLoadData : Command()
     object UpdateData : Command()
+
+    object SaveInstanceState : Command()
 
 }
