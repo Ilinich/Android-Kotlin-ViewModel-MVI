@@ -72,34 +72,6 @@ class NewsFragment : Fragment(R.layout.news_fragment) {
         }
     }
 
-//    override fun onStart() {
-//        super.onStart()
-//
-//        viewModel.apply {
-//
-//            viewState.observe(viewLifecycleOwner, Observer { stateView ->
-//                stateView?.let {
-//                    watcher.render(it)
-//                }
-//            })
-//
-//            news.observe(viewLifecycleOwner, Observer { event ->
-//                event?.let {
-//
-//                }
-//            })
-//        }
-//    }
-
-//    override fun onStop() {
-//        viewModel.apply {
-//            viewState.removeObservers(viewLifecycleOwner)
-//            news.removeObservers(viewLifecycleOwner)
-//        }
-//
-//        super.onStop()
-//    }
-
     override fun onSaveInstanceState(outState: Bundle) {
         viewModel.dispatchEvent(Event.SaveInstanceState)
 

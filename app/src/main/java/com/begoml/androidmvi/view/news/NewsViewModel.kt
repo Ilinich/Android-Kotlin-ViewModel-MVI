@@ -26,8 +26,9 @@ class NewsViewModel(
 ) {
 
     init {
-        savedStateHandle.get<List<NewsModel>>(SAVED_STATE_KEY_NEWS)?.let { value ->
-            value.hashCode()
+        savedStateHandle.apply {
+            val newsList = get<List<NewsModel>>(SAVED_STATE_KEY_NEWS) ?: emptyList()
+            dispatchEvent(Event.UpdateState(newsList))
         }
     }
 
@@ -47,6 +48,7 @@ class ReducerImpl @Inject constructor() : Reducer<ViewState, Effect> {
             Effect.StartedLoading -> state.copy(isLoading = true)
             Effect.StoppedLoading -> state.copy(isLoading = false)
             is Effect.NewsLoaded -> state.copy(newsList = effect.newsList)
+            is Effect.StateUpdated -> state.copy(newsList = effect.newsList)
             else -> state.copy()
         }
     }
@@ -67,6 +69,9 @@ class ActorImpl @Inject constructor(
             }
             Command.SaveInstanceState -> {
                 savedStateHandle.set(SAVED_STATE_KEY_NEWS, state.newsList)
+            }
+            is Command.UpdateState -> {
+                sendEffect(Effect.StateUpdated(command.newsList))
             }
         }
     }
@@ -108,6 +113,7 @@ class UiEventTransformer : EventToCommandTransformer<Event, Command> {
     override fun invoke(event: Event): Command {
         return when (event) {
             Event.SaveInstanceState -> Command.SaveInstanceState
+            is Event.UpdateState -> Command.UpdateState(event.newsList)
         }
     }
 }
@@ -118,11 +124,13 @@ sealed class Effect {
     object StoppedLoading : Effect()
 
     data class NewsLoaded(val newsList: List<NewsModel>) : Effect()
+    data class StateUpdated(val newsList: List<NewsModel>) : Effect()
 }
 
 sealed class Event {
 
     object SaveInstanceState : Event()
+    data class UpdateState(val newsList: List<NewsModel>) : Event()
 }
 
 sealed class News {
@@ -135,5 +143,7 @@ sealed class Command {
     object UpdateData : Command()
 
     object SaveInstanceState : Command()
+
+    data class UpdateState(val newsList: List<NewsModel>) : Command()
 
 }
