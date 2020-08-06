@@ -24,7 +24,7 @@ class NewsFragment : Fragment(R.layout.news_fragment) {
     lateinit var factory: NewsViewModelFactory
 
     private val viewModel: NewsViewModel by lazy {
-        ViewModelProvider({ this.viewModelStore }, factory).get(NewsViewModel::class.java)
+        ViewModelProvider({ viewModelStore }, factory).get(NewsViewModel::class.java)
     }
 
     private val newsAdapter by lazy { NewsAdapter() }

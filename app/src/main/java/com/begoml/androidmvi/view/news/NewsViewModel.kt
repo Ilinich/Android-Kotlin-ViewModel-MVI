@@ -141,9 +141,7 @@ sealed class Command {
 
     object StartLoadData : Command()
     object UpdateData : Command()
-
     object SaveInstanceState : Command()
-
     data class UpdateState(val newsList: List<NewsModel>) : Command()
 
 }
