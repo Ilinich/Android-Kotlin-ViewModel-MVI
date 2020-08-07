@@ -10,7 +10,7 @@ import kotlinx.coroutines.CoroutineScope
  * intermediary between Model and View that decides how to handle Events,
  * supply State updates, and new News
  */
-abstract class MviViewModel<ViewState : Any, UiEvent : Any, Command : Any, Effect : Any, News : Any>(
+abstract class MviViewModel<ViewState, UiEvent, Command, Effect, News>(
     viewState: ViewState,
     private val eventToCommandTransformer: EventToCommandTransformer<UiEvent, Command>,
     private val actor: Actor<ViewState, Command, Effect>,
@@ -68,7 +68,7 @@ abstract class MviViewModel<ViewState : Any, UiEvent : Any, Command : Any, Effec
      *
      * @param event - ui intent
      */
-    open fun dispatchEvent(event: UiEvent) {
+    fun dispatchEvent(event: UiEvent) {
         val command = eventToCommandTransformer(event)
         nextCommand(command)
     }
@@ -105,7 +105,7 @@ abstract class MviViewModel<ViewState : Any, UiEvent : Any, Command : Any, Effec
     }
 }
 
-private fun <T : Any> LiveData<T>.state() = value!!
+private fun <T> LiveData<T>.state() = value!!
 
 typealias EventToCommandTransformer<Event, Command> = (event: Event) -> Command
 

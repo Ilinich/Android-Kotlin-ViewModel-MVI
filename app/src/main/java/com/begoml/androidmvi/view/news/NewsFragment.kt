@@ -28,7 +28,7 @@ class NewsFragment : Fragment(R.layout.news_fragment) {
     }
 
     private val newsAdapter by lazy {
-        NewsAdapter() { newsModel ->
+        NewsAdapter { newsModel ->
             viewModel.dispatchEvent(Event.NewsModelClick(newsModel))
         }
     }

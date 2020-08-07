@@ -19,7 +19,7 @@ class NewsAdapter(private val listener: (model: NewsModel) -> Unit) : BaseRecycl
 
     override fun submitList(newList: List<NewsModel>) {
         val oldList = items
-        notify(oldList, newList) { o, n -> o.id == n.id }
+        notify(oldList, newList) { old, new -> old.id == new.id }
         items = newList
     }
 
