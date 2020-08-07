@@ -12,7 +12,7 @@ import kotlinx.coroutines.CoroutineScope
  */
 abstract class MviViewModel<ViewState, UiEvent, Command, Effect, News>(
     viewState: ViewState,
-    private val eventToCommandTransformer: EventToCommandTransformer<UiEvent, Command>,
+    private val eventHandler: EventHandler<UiEvent, Command>,
     private val actor: Actor<ViewState, Command, Effect>,
     private val reducer: Reducer<ViewState, Effect>,
     private val postProcessor: PostProcessor<ViewState, Effect, Command>? = null,
@@ -69,7 +69,7 @@ abstract class MviViewModel<ViewState, UiEvent, Command, Effect, News>(
      * @param event - ui intent
      */
     fun dispatchEvent(event: UiEvent) {
-        val command = eventToCommandTransformer(event)
+        val command = eventHandler(event)
         nextCommand(command)
     }
 
@@ -107,7 +107,7 @@ abstract class MviViewModel<ViewState, UiEvent, Command, Effect, News>(
 
 private fun <T> LiveData<T>.state() = value!!
 
-typealias EventToCommandTransformer<Event, Command> = (event: Event) -> Command
+typealias EventHandler<Event, Command> = (event: Event) -> Command
 
 typealias Actor<ViewState, Command, Effect> = (state: ViewState, command: Command, viewModelScope: CoroutineScope, sendEffect: (effect: Effect) -> Unit) -> Unit
 

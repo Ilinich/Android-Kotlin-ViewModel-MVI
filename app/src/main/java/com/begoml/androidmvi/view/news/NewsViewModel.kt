@@ -18,7 +18,7 @@ class NewsViewModel(
     bootstrapper: BootstrapperImpl
 ) : MviViewModel<ViewState, Event, Command, Effect, News>(
     viewState = ViewState(),
-    eventToCommandTransformer = UiEventTransformer(),
+    eventHandler = UiEventTransformer(),
     actor = actor,
     reducer = reducer,
     postProcessor = postProcessor,
@@ -113,7 +113,7 @@ class BootstrapperImpl @Inject constructor() : Bootstrapper<Command> {
     }
 }
 
-class UiEventTransformer : EventToCommandTransformer<Event, Command> {
+class UiEventTransformer : EventHandler<Event, Command> {
     override fun invoke(event: Event): Command {
         return when (event) {
             Event.SaveInstanceState -> Command.SaveInstanceState
