@@ -12,7 +12,6 @@ import com.begoml.androidmvi.BaseApp
 import com.begoml.androidmvi.R
 import com.begoml.androidmvi.di.listnews.DaggerNewsComponent
 import com.begoml.androidmvi.di.listnews.NewsComponent
-import com.begoml.androidmvi.mvi.ViewStateWatcher
 import com.begoml.androidmvi.mvi.initializeViewStateWatcher
 import kotlinx.android.synthetic.main.news_fragment.*
 import javax.inject.Inject
@@ -28,7 +27,11 @@ class NewsFragment : Fragment(R.layout.news_fragment) {
         ViewModelProvider({ viewModelStore }, factory).get(NewsViewModel::class.java)
     }
 
-    private val newsAdapter by lazy { NewsAdapter() }
+    private val newsAdapter by lazy {
+        NewsAdapter() { newsModel ->
+            viewModel.dispatchEvent(Event.NewsModelClick(newsModel))
+        }
+    }
 
     private val watcher = initializeViewStateWatcher<ViewState> {
 
@@ -67,7 +70,11 @@ class NewsFragment : Fragment(R.layout.news_fragment) {
 
             news.observe(viewLifecycleOwner, Observer { event ->
                 event?.let {
-
+                    when (it) {
+                        is News.GoToNewsDetails -> {
+                            // todo:  go to news details screen
+                        }
+                    }
                 }
             })
         }

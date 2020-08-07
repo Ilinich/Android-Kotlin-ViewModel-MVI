@@ -22,7 +22,8 @@ class NewsViewModel(
     actor = actor,
     reducer = reducer,
     postProcessor = postProcessor,
-    bootstrapper = bootstrapper
+    bootstrapper = bootstrapper,
+    newsPublisher = NewsPublisherImpl()
 ) {
 
     init {
@@ -73,6 +74,9 @@ class ActorImpl @Inject constructor(
             is Command.UpdateState -> {
                 sendEffect(Effect.StateUpdated(command.newsList))
             }
+            is Command.NewsModelClicked -> {
+                sendEffect(Effect.NewsModelClicked(command.newsModel))
+            }
         }
     }
 
@@ -114,8 +118,18 @@ class UiEventTransformer : EventToCommandTransformer<Event, Command> {
         return when (event) {
             Event.SaveInstanceState -> Command.SaveInstanceState
             is Event.UpdateState -> Command.UpdateState(event.newsList)
+            is Event.NewsModelClick -> Command.NewsModelClicked(event.newsModel)
         }
     }
+}
+
+class NewsPublisherImpl : NewsPublisher<ViewState, Effect, News> {
+
+    override fun invoke(state: ViewState, effect: Effect): News? = when (effect) {
+        is Effect.NewsModelClicked -> News.GoToNewsDetails(effect.newsModel)
+        else -> null
+    }
+
 }
 
 sealed class Effect {
@@ -125,19 +139,24 @@ sealed class Effect {
 
     data class NewsLoaded(val newsList: List<NewsModel>) : Effect()
     data class StateUpdated(val newsList: List<NewsModel>) : Effect()
+    data class NewsModelClicked(val newsModel: NewsModel) : Effect()
 }
 
 sealed class Event {
+
+    data class NewsModelClick(val newsModel: NewsModel) : Event()
 
     object SaveInstanceState : Event()
     data class UpdateState(val newsList: List<NewsModel>) : Event()
 }
 
 sealed class News {
-
+    data class GoToNewsDetails(val newsModel: NewsModel) : News()
 }
 
 sealed class Command {
+
+    data class NewsModelClicked(val newsModel: NewsModel) : Command()
 
     object StartLoadData : Command()
     object UpdateData : Command()

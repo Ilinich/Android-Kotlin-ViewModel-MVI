@@ -90,8 +90,9 @@ abstract class MviViewModel<ViewState : Any, UiEvent : Any, Command : Any, Effec
         }
 
         newsPublisher?.let { newsPublisher ->
-            val news = newsPublisher(state.state(), effect)
-            nextNews(news)
+            newsPublisher(state.state(), effect)?.let { news ->
+                nextNews(news)
+            }
         }
     }
 
@@ -112,7 +113,7 @@ typealias Actor<ViewState, Command, Effect> = (state: ViewState, command: Comman
 
 typealias Reducer<ViewState, Effect> = (state: ViewState, effect: Effect) -> ViewState
 
-typealias NewsPublisher<ViewState, Effect, News> = (state: ViewState, effect: Effect) -> News
+typealias NewsPublisher<ViewState, Effect, News> = (state: ViewState, effect: Effect) -> News?
 
 typealias PostProcessor<ViewState, Effect, Command> = (state: ViewState, effect: Effect) -> Command?
 

@@ -11,7 +11,7 @@ import com.begoml.androidmvi.view.BaseViewHolder
 import kotlinx.android.extensions.LayoutContainer
 import kotlinx.android.synthetic.main.item_news.*
 
-class NewsAdapter : BaseRecyclerAdapter<NewsModel, NewsAdapter.NewsViewHolder>() {
+class NewsAdapter(private val listener: (model: NewsModel) -> Unit) : BaseRecyclerAdapter<NewsModel, NewsAdapter.NewsViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NewsViewHolder {
         return NewsViewHolder(inflate(R.layout.item_news, parent))
@@ -23,12 +23,14 @@ class NewsAdapter : BaseRecyclerAdapter<NewsModel, NewsAdapter.NewsViewHolder>()
         items = newList
     }
 
-    inner class NewsViewHolder(override val containerView: View):
+    inner class NewsViewHolder(override val containerView: View) :
         BaseViewHolder<NewsModel>(containerView), LayoutContainer {
 
         override fun bind(data: NewsModel) {
             newsTitle.text = data.title
             newsDesc.text = data.description
+
+            containerView.setOnClickListener { listener(data) }
         }
     }
 }
