@@ -1,13 +1,13 @@
 package com.begoml.androidmvi.view.news
 
 import androidx.lifecycle.SavedStateHandle
-import com.begoml.androidmvi.core.NewsRepository
+import com.begoml.androidmvi.core.GetNewsUseCase
+import com.begoml.androidmvi.core.UseCase
 import com.begoml.androidmvi.core.model.NewsModel
 import com.begoml.androidmvi.mvi.*
 import com.begoml.androidmvi.tools.handleResults
 import com.begoml.androidmvi.view.news.NewsViewModel.Companion.SAVED_STATE_KEY_NEWS
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class NewsViewModel(
@@ -57,7 +57,7 @@ class ReducerImpl @Inject constructor() : Reducer<ViewState, Effect> {
 
 class ActorImpl @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
-    private val newsRepository: NewsRepository
+    private val getNewsUseCase: GetNewsUseCase
 ) : Actor<ViewState, Command, Effect> {
 
     override fun invoke(state: ViewState, command: Command, viewModelScope: CoroutineScope, sendEffect: (effect: Effect) -> Unit) {
@@ -81,12 +81,10 @@ class ActorImpl @Inject constructor(
     }
 
     private fun updateData(viewModelScope: CoroutineScope, sendEffect: (effect: Effect) -> Unit) {
+        sendEffect(Effect.StartedLoading)
 
-        viewModelScope.launch {
-
-            sendEffect(Effect.StartedLoading)
-
-            newsRepository.getNews().handleResults(
+        getNewsUseCase(viewModelScope, viewModelScope, UseCase.None) {
+            it.handleResults(
                 {
                     sendEffect(Effect.StoppedLoading)
                 }, { newsList ->

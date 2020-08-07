@@ -5,5 +5,5 @@ import com.begoml.androidmvi.tools.ResultWrapper
 
 interface NewsRepository {
 
-    suspend fun getNews(): ResultWrapper<Throwable, List<NewsModel>>
+    suspend fun getNews(): ResultWrapper<Failure, List<NewsModel>>
 }

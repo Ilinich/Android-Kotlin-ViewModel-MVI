@@ -5,11 +5,12 @@ import androidx.lifecycle.AbstractSavedStateViewModelFactory
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.savedstate.SavedStateRegistryOwner
+import com.begoml.androidmvi.core.GetNewsUseCase
 import com.begoml.androidmvi.core.NewsRepository
 import javax.inject.Inject
 
 class NewsViewModelFactory @Inject constructor(
-    private val newsRepository: NewsRepository,
+    private val getNewsUseCase: GetNewsUseCase,
     fragment: Fragment,
     private val reducer: ReducerImpl,
     private val postProcessor: PostProcessorImpl,
@@ -25,7 +26,7 @@ class NewsViewModelFactory @Inject constructor(
             savedStateHandle = handle,
             reducer = reducer,
             actor = ActorImpl(
-                newsRepository = newsRepository,
+                getNewsUseCase = getNewsUseCase,
                 savedStateHandle = handle
             ),
             postProcessor = postProcessor,
