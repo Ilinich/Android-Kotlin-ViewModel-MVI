@@ -7,7 +7,7 @@ import javax.inject.Inject
 
 class NewsRepositoryImpl @Inject constructor() : NewsRepository {
     override suspend fun getNews(): ResultWrapper<Failure, List<NewsModel>> {
-        delay(3000)
+        delay(7000)
         return ResultWrapper.Success(
             listOf(
                 NewsModel(

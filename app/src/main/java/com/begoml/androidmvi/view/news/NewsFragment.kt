@@ -103,6 +103,13 @@ class NewsFragment : Fragment(R.layout.news_fragment) {
         }
         newsComponent.inject(this)
     }
+
+    private fun Fragment.isNeedToClearComponent(): Boolean =
+        when {
+            activity?.isChangingConfigurations == true -> false
+            activity?.isFinishing == true -> true
+            else -> true
+        }
 }
 
 fun View.visibility(visible: Boolean) {
